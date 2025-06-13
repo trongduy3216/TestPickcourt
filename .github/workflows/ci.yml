@@ -32,7 +32,7 @@ jobs:
 
       - name: 📁 Compress build output
         run: |
-          tar -czf pickcourt-fe.tar.gz .next public package.json yarn.lock next.config.js
+          tar -czf pickcourt-fe.tar.gz .next public package.json yarn.lock
 
       - name: 📡 Upload build to VPS
         uses: appleboy/scp-action@v0.1.4
