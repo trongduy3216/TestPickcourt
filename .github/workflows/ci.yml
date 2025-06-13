@@ -2,7 +2,7 @@ name: 🚀 CI/CD - PickCourt FE
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
 
 jobs:
   build-and-deploy:
