@@ -1,14 +1,11 @@
-name: 🚀 CI - PickCourt FE
+name: 🚀 CI/CD - PickCourt FE
 
 on:
   push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
+    branches: [main, develop]
 
 jobs:
-  ci-check:
-    name: 🔍 Lint, Test & Build
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,3 +29,30 @@ jobs:
 
       - name: 🏗️ Build Project
         run: yarn build
+
+      - name: 📁 Compress build output
+        run: |
+          tar -czf pickcourt-fe.tar.gz .next public package.json yarn.lock next.config.js
+
+      - name: 📡 Upload build to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "pickcourt-fe.tar.gz"
+          target: "/root"
+
+      - name: 🔄 SSH into VPS and deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /root
+            rm -rf pickcourt-fe
+            mkdir -p pickcourt-fe
+            tar -xzf pickcourt-fe.tar.gz -C pickcourt-fe
+            cd pickcourt-fe
+            pm2 restart pickcourt-fe || pm2 start npm --name "pickcourt-fe" -- start
